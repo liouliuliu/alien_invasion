@@ -29,6 +29,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
             self.clock.tick(60)
 
@@ -70,6 +71,10 @@ class AlienInvasion:
         # 让最近绘制的屏幕可见
         pygame.display.flip()
 
+    def _update_aliens(self):
+        """检查是否有外星⼈位于屏幕边缘，并更新整个外星舰队的位置"""
+        self._check_fleet_edges()
+        self.aliens.update()
 
     def _fire_bullet(self):
         """创建一颗子弹，并切换到新屏幕"""
@@ -91,16 +96,41 @@ class AlienInvasion:
         # 创建⼀个外星⼈，再不断添加，直到没有空间添加外星⼈为⽌
         # 外星⼈的间距为外星⼈的宽度
         alien = Alien(self)
-        alien_width = alien.rect.width
+        alien_width, alien_height = alien.rect.size
+        current_x, current_y = alien_width, alien_height
 
         current_x = alien_width
-        while current_x < (self.settings.screen_width - 2 * alien_width):
-            new_alien = Alien(self)
-            new_alien.x = current_x
-            new_alien.rect.x = current_x
-            self.aliens.add(new_alien)
-            current_x += 2 * alien_width
+        # 小于 屏幕⾼度减去三个外星⼈
+        while current_y < (self.settings.screen_height - 3 * alien_height):
+            # 每行外星人，留两个位置空
+            while current_x < (self.settings.screen_width - 2 * alien_width):
+                self._create_alien(current_x, current_y)
+                current_x += 2 * alien_width
+            # 添加⼀⾏外星⼈后，重置 x 值并递增 y 值
+            current_x = alien_width
+            current_y += 2 * alien_height
 
+    def  _create_alien(self, x_position, y_position):
+        """创建⼀个外星⼈，并将其加⼊外星舰队"""
+        new_alien = Alien(self)
+        new_alien.x = x_position
+        new_alien.rect.x = x_position
+        new_alien.rect.y = y_position
+        self.aliens.add(new_alien)
+
+    def _check_fleet_edges(self):
+        """有外星⼈到达边缘时，处理相应的操作"""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """将整群外星⼈下移，并改变它们的⽅向"""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+        print(self.settings.fleet_direction)
 if __name__ == '__main__':
     # 创建一个游戏实例，并运行游戏
     ai = AlienInvasion()

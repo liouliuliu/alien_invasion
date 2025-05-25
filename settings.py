@@ -16,3 +16,8 @@ class Settings:
         self.bullets_allowed = 3
         # 飞船移动速度设置
         self.ship_speed = 2.5
+        # 外星⼈设置
+        self.alien_speed = 1.0
+        self.fleet_drop_speed = 10
+        # fleet_direction为 1 表示向右移，为 -1 表示向左移
+        self.fleet_direction = 1
